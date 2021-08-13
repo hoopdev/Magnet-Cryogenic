@@ -111,7 +111,7 @@ class Controller:
 
     @heater.setter
     def heater(self, value: bool) -> None:
-        def heater_on(self) -> None:
+        def heater_on() -> None:
             self.response = self.controller.query('HEATER ON')
             res_array = self.response.split(' ')
             if res_array[3] == 'ON':
@@ -121,7 +121,7 @@ class Controller:
             time.sleep(self.HEATER_WAIT)
             print('Heater ON Finished')
 
-        def heater_off(self) -> None:
+        def heater_off() -> None:
             self.response = self.controller.query('HEATER OFF')
             res_array = self.response.split(' ')
             if res_array[3] == 'OFF':
