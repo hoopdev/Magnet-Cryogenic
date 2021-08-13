@@ -112,8 +112,8 @@ class Controller:
     @heater.setter
     def heater(self, value: bool) -> None:
         def heater_on() -> None:
-            self.response = self._inst.query('HEATER ON')
-            res_array = self.response.split(' ')
+            self._response = self._inst.query('HEATER ON')
+            res_array = self._response.split(' ')
             if res_array[3] == 'ON':
                 print("Heater ON Started")
             else:
@@ -122,8 +122,8 @@ class Controller:
             print('Heater ON Finished')
 
         def heater_off() -> None:
-            self.response = self._inst.query('HEATER OFF')
-            res_array = self.response.split(' ')
+            self._response = self._inst.query('HEATER OFF')
+            res_array = self._response.split(' ')
             if res_array[3] == 'OFF':
                 print("Heater OFF Started")
             else:
@@ -166,9 +166,9 @@ class Controller:
         self._response = self._inst.query('RAMP STATUS')
         res_array = self._response.split(' ')
         if res_array[3] == 'HOLDING':
-            self._ramp = RampStatus('HOLDING', res_array[7], None)
+            self._ramp = RampStatus('HOLDING', float(res_array[7]), None)
         elif res_array[3] == 'RAMPING':
-            self._ramp = RampStatus('RAMPING', res_array[5], res_array[7])
+            self._ramp = RampStatus('RAMPING', float(res_array[5]), float(res_array[7]))
         else:
             print("Abnormal status")
             self._ramp = RampStatus(res_array[3], None, None)
