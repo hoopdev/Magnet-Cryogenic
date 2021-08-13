@@ -166,7 +166,7 @@ class Controller:
         self._response = self._inst.query('RAMP STATUS')
         res_array = self._response.split(' ')
         if res_array[3] == 'HOLDING':
-            self._ramp = RampStatus('HOLDING', res_array[6], None)
+            self._ramp = RampStatus('HOLDING', res_array[7], None)
         elif res_array[3] == 'RAMPING':
             self._ramp = RampStatus('RAMPING', res_array[5], res_array[7])
         else:
