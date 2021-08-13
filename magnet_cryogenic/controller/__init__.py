@@ -34,19 +34,19 @@ class Controller:
     PROPER_RAMP_RATE: float = 0.390
     HEATER_WAIT: int = 30
 
-    _response: str = dataclasses.field(default=0, init=False)
-    _resource: Any = dataclasses.field(default=0, init=False)
-    _inst: Any = dataclasses.field(default=0, init=False)
+    _response: str = dataclasses.field(default="", init=False)
+    _resource: Any = dataclasses.field(default=None, init=False)
+    _inst: Any = dataclasses.field(default=None, init=False)
 
-    _output: MagnetOutput = dataclasses.field(default=0, init=False)
-    _heater_voltage: MagnetValue = dataclasses.field(default=0, init=False)
-    _mid: MagnetValue = dataclasses.field(default=0, init=False)
-    _ramp_rate: MagnetValue = dataclasses.field(default=0, init=False)
+    _output: MagnetOutput = dataclasses.field(default=None, init=False)
+    _heater_voltage: MagnetValue = dataclasses.field(default=None, init=False)
+    _mid: MagnetValue = dataclasses.field(default=None, init=False)
+    _ramp_rate: MagnetValue = dataclasses.field(default=None, init=False)
 
-    _heater: bool = dataclasses.field(default=0, init=False)
-    _ramp: RampStatus = dataclasses.field(default=0, init=False)
-    _persistent: PersistentStatus = dataclasses.field(default=0, init=False)
-    _log: str = dataclasses.field(default=0, init=False)
+    _heater: bool = dataclasses.field(default=None, init=False)
+    _ramp: RampStatus = dataclasses.field(default=None, init=False)
+    _persistent: PersistentStatus = dataclasses.field(default=PersistentStatus(False, None), init=False)
+    _log: str = dataclasses.field(default=None, init=False)
 
     def __post_init__(self) -> None:
         self._resource = pyvisa.ResourceManager()
@@ -58,7 +58,7 @@ class Controller:
     def output(self) -> MagnetOutput:
         self._response = self._inst.query('GET OUTPUT')
         res_array = self._response.split(' ')
-        self._output = Output(res_array[0], float(res_array[2]), float(res_array[5]))
+        self._output = MagnetOutput(res_array[0], float(res_array[2]), float(res_array[5]))
         return self._output
 
     @property
