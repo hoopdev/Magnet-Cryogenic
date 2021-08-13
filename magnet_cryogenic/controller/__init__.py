@@ -24,8 +24,8 @@ class Controller:
     ramp_rate: float = dataclasses.field(default=0, init=False)
 
     ramp_status: str = dataclasses.field(default=0, init=False)
-    heater_status: str = dataclasses.field(default=0, init=False)
-    persistent_status: bool = dataclasses.field(default=0, init=False)
+    _heater: bool = dataclasses.field(default=0, init=False)
+    _persistent: bool = dataclasses.field(default=0, init=False)
     log: str = dataclasses.field(default=0, init=False)
 
     def __post_init__(self) -> None:
@@ -75,19 +75,23 @@ class Controller:
         # print(result_dict)
         return result_dict
 
-    def heater_indicator(self):
+    @property
+    def heater_status(self):
+        return self._heater
+
+    @heater_status.setter
+    def heater_status(self):
         self.response = self.controller.query('HEATER')
         res_array = self.response.split(' ')
         if res_array[3] == 'ON':
             print('Heater: ON')
-            self.heater_status = True
-            return True
+            self._heater = True
         elif res_array[3] == 'OFF':
             print('Heater: OFF')
-            self.heater_status = False
-            return False
+            self._heater = False
         else:
             raise ValueError("Error")
+        return
 
     def check_ramp_status(self) -> str:
         self.response = self.controller.query('RAMP STATUS')
@@ -96,7 +100,7 @@ class Controller:
         return status
 
     def heater_on(self) -> None:
-        if self.heater_indicator():
+        if self.heater_status:
             print("Heater is already ON")
         else:
             self.response = self.controller.query('HEATER ON')
@@ -111,7 +115,7 @@ class Controller:
         return
 
     def heater_off(self) -> None:
-        if not self.heater_indicator():
+        if not self.heater_status:
             print("Heater is already OFF")
         else:
             self.response = self.controller.query('HEATER OFF')
