@@ -145,8 +145,14 @@ class Controller:
     @heater.setter
     def heater(self, value: bool) -> None:
         def heater_on() -> None:
-            self._response = self._inst.query('HEATER ON')
-            res_array = self._response.split(' ')
+            self._retry_count = 0
+            while self._retry_count < self.RETRY_MAX:
+                self._response = self._inst.query('HEATER ON')
+                res_array = self._response.split(' ')
+                if res_array[1] == 'HEATER':
+                    break
+                self._retry_count += 1
+                time.sleep(self.RETRY_SLEEP)
             if res_array[3] == 'ON':
                 print("Heater ON Started")
                 self._heater = HeaterStatus(True, None)
@@ -163,8 +169,14 @@ class Controller:
             return
 
         def heater_off() -> None:
-            self._response = self._inst.query('HEATER OFF')
-            res_array = self._response.split(' ')
+            self._retry_count = 0
+            while self._retry_count < self.RETRY_MAX:
+                self._response = self._inst.query('HEATER OFF')
+                res_array = self._response.split(' ')
+                if res_array[1] == 'HEATER':
+                    break
+                self._retry_count += 1
+                time.sleep(self.RETRY_SLEEP)
             if res_array[3] == 'OFF':
                 print("Heater OFF Started")
                 self._heater = HeaterStatus(False, None)
@@ -213,8 +225,14 @@ class Controller:
 
     @property
     def ramp_status(self) -> RampStatus:
-        self._response = self._inst.query('RAMP STATUS')
-        res_array = self._response.split(' ')
+        self._retry_count = 0
+        while self._retry_count < self.RETRY_MAX:
+            self._response = self._inst.query('RAMP STATUS')
+            res_array = self._response.split(' ')
+            if res_array[1] == 'RAMP':
+                break
+            self._retry_count += 1
+            time.sleep(self.RETRY_SLEEP)
         if res_array[3] == 'HOLDING':
             self._ramp = RampStatus('HOLDING', float(res_array[7]), None)
         elif res_array[3] == 'RAMPING':
