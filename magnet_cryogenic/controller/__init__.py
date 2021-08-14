@@ -22,6 +22,11 @@ class RampStatus(NamedTuple):
     target_field: float
 
 
+class HeaterStatus(NamedTuple):
+    switch: bool
+    field: float
+
+
 class PersistentStatus(NamedTuple):
     state: bool
     field: float
@@ -43,7 +48,7 @@ class Controller:
     _mid: MagnetValue = dataclasses.field(default=None, init=False)
     _ramp_rate: MagnetValue = dataclasses.field(default=None, init=False)
 
-    _heater: bool = dataclasses.field(default=None, init=False)
+    _heater: HeaterStatus = dataclasses.field(default=None, init=False)
     _ramp: RampStatus = dataclasses.field(default=None, init=False)
     _persistent: PersistentStatus = dataclasses.field(default=PersistentStatus(False, None), init=False)
     _log: str = dataclasses.field(default=None, init=False)
@@ -103,9 +108,17 @@ class Controller:
         self._response = self._inst.query('HEATER')
         res_array = self._response.split(' ')
         if res_array[3] == 'ON':
-            return True
+            self._heater = HeaterStatus(True, None)
+            return self._heater.switch
         elif res_array[3] == 'OFF':
-            return False
+            self._heater = HeaterStatus(False, None)
+            return self._heater.switch
+        elif res_array[3] == 'SWITCHED' and res_array[4] == 'ON':
+            self._heater = HeaterStatus(True, float(res_array[6]))
+            return self._heater.switch
+        elif res_array[3] == 'SWITCHED' and res_array[4] == 'OFF':
+            self._heater = HeaterStatus(False, float(res_array[6]))
+            return self._heater.switch
         else:
             raise ValueError("Error")
 
@@ -116,20 +129,34 @@ class Controller:
             res_array = self._response.split(' ')
             if res_array[3] == 'ON':
                 print("Heater ON Started")
+                self._heater = HeaterStatus(True, None)
+            elif res_array[3] == 'SWITCHED' and res_array[4] == 'ON':
+                print("Heater ON Started")
+                self._heater = HeaterStatus(True, float(res_array[6]))
             else:
-                print('Heater ON Failed')
+                print('Failed')
+                return
+
             time.sleep(self.HEATER_WAIT)
             print('Heater ON Finished')
+            return
 
         def heater_off() -> None:
             self._response = self._inst.query('HEATER OFF')
             res_array = self._response.split(' ')
             if res_array[3] == 'OFF':
                 print("Heater OFF Started")
+                self._heater = HeaterStatus(False, None)
+            elif res_array[3] == 'SWITCHED' and res_array[4] == 'OFF':
+                print("Heater OFF Started")
+                self._heater = HeaterStatus(False, float(res_array[6]))
             else:
-                print('Heater OFF Failed')
+                print('Failed')
+                return
+
             time.sleep(self.HEATER_WAIT)
             print('Heater OFF Finished')
+            return
 
         if self.ramp_status.state == 'HOLDING':
             if value:  # Switch to ON
@@ -137,7 +164,7 @@ class Controller:
                     print("Heater is already ON")
                 else:
                     if self.persistent_status:
-                        if np.abs(self.ramp_status.field - self.persistent_field) > 0.001:
+                        if np.abs(self.ramp_status.field - self.persistent_field) > 0.0001:
                             print("Ramp to persistent field first")
                         else:
                             heater_on()
@@ -180,7 +207,7 @@ class Controller:
 
     @persistent_status.setter
     def persistent_status(self, state: bool) -> None:
-        self._persistent = PersistentStatus(state, self.ramp_status.field)
+        self._persistent = PersistentStatus(state, self._heater.field)
         return
 
     @property
