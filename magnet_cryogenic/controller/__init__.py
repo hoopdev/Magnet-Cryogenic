@@ -124,6 +124,7 @@ class Controller:
             self._heater = HeaterStatus(False, float(res_array[6]))
             return self._heater.switch
         else:
+            print(self._response)
             raise ValueError("Error")
 
     @heater.setter
@@ -139,6 +140,7 @@ class Controller:
                 self._heater = HeaterStatus(True, float(res_array[6]))
             else:
                 print('Failed')
+                print(self._response)
                 return
 
             time.sleep(self.HEATER_WAIT)
@@ -156,6 +158,7 @@ class Controller:
                 self._heater = HeaterStatus(False, float(res_array[6]))
             else:
                 print('Failed')
+                print(self._response)
                 return
 
             time.sleep(self.HEATER_WAIT)
@@ -189,6 +192,7 @@ class Controller:
                         else:
                             heater_off()
         else:
+            print(self._response)
             print("Hold on")
         return
 
