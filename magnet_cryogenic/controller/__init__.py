@@ -38,7 +38,10 @@ class Controller:
     TIMEOUT: int = 25000
     PROPER_RAMP_RATE: float = 0.390
     HEATER_WAIT: int = 30
+    RETRY_MAX: int = 3
+    RETRY_SLEEP: float = 0.1
 
+    _retry_count: int = dataclasses.field(default="", init=False)
     _response: str = dataclasses.field(default="", init=False)
     _resource: Any = dataclasses.field(default=None, init=False)
     _inst: Any = dataclasses.field(default=None, init=False)
@@ -61,12 +64,18 @@ class Controller:
 
     @property
     def output(self) -> MagnetOutput:
-        try:
+        self._retry_count = 0
+        while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('GET OUTPUT')
             res_array = self._response.split(' ')
+            if res_array[1] == 'OUTPUT:':
+                break
+            self._retry_count += 1
+            time.sleep(self.RETRY_SLEEP)
+
+        try:
             self._output = MagnetOutput(res_array[0], float(res_array[2]), float(res_array[5]))
         except:
-            print("Could not get Output")
             self._output = MagnetOutput(None, None, None)
         return self._output
 
@@ -109,8 +118,14 @@ class Controller:
 
     @property
     def heater(self) -> bool:
-        self._response = self._inst.query('HEATER')
-        res_array = self._response.split(' ')
+        self._retry_count = 0
+        while self._retry_count < self.RETRY_MAX:
+            self._response = self._inst.query('HEATER')
+            res_array = self._response.split(' ')
+            if res_array[1] == 'HEATER':
+                break
+            self._retry_count += 1
+            time.sleep(self.RETRY_SLEEP)
         if res_array[3] == 'ON':
             self._heater = HeaterStatus(True, None)
             return self._heater.switch
