@@ -39,7 +39,7 @@ class Controller:
     PROPER_RAMP_RATE: float = 0.390
     HEATER_WAIT: int = 30
     RETRY_MAX: int = 3
-    RETRY_SLEEP: float = 0.1
+    SLEEP: float = 0.1
 
     _retry_count: int = dataclasses.field(default="", init=False)
     _response: str = dataclasses.field(default="", init=False)
@@ -64,6 +64,7 @@ class Controller:
 
     @property
     def output(self) -> MagnetOutput:
+        time.sleep(self.SLEEP)
         self._retry_count = 0
         while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('GET OUTPUT')
@@ -71,7 +72,7 @@ class Controller:
             if res_array[1] == 'OUTPUT:':
                 break
             self._retry_count += 1
-            time.sleep(self.RETRY_SLEEP)
+            time.sleep(self.SLEEP)
 
         try:
             self._output = MagnetOutput(res_array[0], float(res_array[2]), float(res_array[5]))
@@ -81,6 +82,7 @@ class Controller:
 
     @property
     def mid(self) -> float:
+        time.sleep(self.SLEEP)
         self._response = self._inst.query('GET MID')
         res_array = self._response.split(' ')
         self._mid = MagnetValue(res_array[0], float(res_array[4]))
@@ -88,6 +90,7 @@ class Controller:
 
     @mid.setter
     def mid(self, value: float) -> None:
+        time.sleep(self.SLEEP)
         if value > 1.5:
             print('MID is too high')
             return
@@ -100,6 +103,7 @@ class Controller:
 
     @property
     def ramp_rate(self) -> float:
+        time.sleep(self.SLEEP)
         self._response = self._inst.query('GET RATE')
         res_array = self._response.split(' ')
         self._ramp_rate = MagnetValue(res_array[0], float(res_array[4]))
@@ -111,6 +115,7 @@ class Controller:
 
     @property
     def heater_voltage(self) -> float:
+        time.sleep(self.SLEEP)
         self._response = self._inst.query('GET HV')
         res_array = self._response.split(' ')
         self._heater_voltage = MagnetValue(res_array[0], float(res_array[4]))
@@ -118,6 +123,7 @@ class Controller:
 
     @property
     def heater(self) -> bool:
+        time.sleep(self.SLEEP)
         self._retry_count = 0
         while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('HEATER')
@@ -125,7 +131,7 @@ class Controller:
             if res_array[1] == 'HEATER':
                 break
             self._retry_count += 1
-            time.sleep(self.RETRY_SLEEP)
+            time.sleep(self.SLEEP)
         if res_array[3] == 'ON':
             self._heater = HeaterStatus(True, None)
             return self._heater.switch
@@ -152,7 +158,7 @@ class Controller:
                 if res_array[1] == 'HEATER':
                     break
                 self._retry_count += 1
-                time.sleep(self.RETRY_SLEEP)
+                time.sleep(self.SLEEP)
             if res_array[3] == 'ON':
                 print("Heater ON Started")
                 self._heater = HeaterStatus(True, None)
@@ -176,7 +182,7 @@ class Controller:
                 if res_array[1] == 'HEATER':
                     break
                 self._retry_count += 1
-                time.sleep(self.RETRY_SLEEP)
+                time.sleep(self.SLEEP)
             if res_array[3] == 'OFF':
                 print("Heater OFF Started")
                 self._heater = HeaterStatus(False, None)
@@ -192,6 +198,7 @@ class Controller:
             print('Heater OFF Finished')
             return
 
+        time.sleep(self.SLEEP)
         if self.ramp_status.state == 'HOLDING':
             if value:  # Switch to ON
                 if self.heater:
@@ -225,6 +232,7 @@ class Controller:
 
     @property
     def ramp_status(self) -> RampStatus:
+        time.sleep(self.SLEEP)
         self._retry_count = 0
         while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('RAMP STATUS')
@@ -232,7 +240,7 @@ class Controller:
             if res_array[1] == 'RAMP':
                 break
             self._retry_count += 1
-            time.sleep(self.RETRY_SLEEP)
+            time.sleep(self.SLEEP)
         if res_array[3] == 'HOLDING':
             self._ramp = RampStatus('HOLDING', float(res_array[7]), None)
         elif res_array[3] == 'RAMPING':
@@ -256,6 +264,7 @@ class Controller:
         return self._persistent.field
 
     def ramp_zero(self) -> None:
+        time.sleep(self.SLEEP)
         if self.ramp_status.state == 'HOLDING':
             self._response = self._inst.write('RAMP ZERO')
         elif self.ramp_status.state == 'RAMPING':
@@ -263,6 +272,7 @@ class Controller:
         return
 
     def ramp_mid(self) -> None:
+        time.sleep(self.SLEEP)
         if self.ramp_status.state == 'HOLDING':
             self._response = self._inst.write('RAMP MID')
         elif self.ramp_status.state == 'RAMPING':
