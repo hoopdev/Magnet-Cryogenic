@@ -61,9 +61,13 @@ class Controller:
 
     @property
     def output(self) -> MagnetOutput:
-        self._response = self._inst.query('GET OUTPUT')
-        res_array = self._response.split(' ')
-        self._output = MagnetOutput(res_array[0], float(res_array[2]), float(res_array[5]))
+        try:
+            self._response = self._inst.query('GET OUTPUT')
+            res_array = self._response.split(' ')
+            self._output = MagnetOutput(res_array[0], float(res_array[2]), float(res_array[5]))
+        except:
+            print("Could not get Output")
+            self._output = MagnetOutput(None, None, None)
         return self._output
 
     @property
