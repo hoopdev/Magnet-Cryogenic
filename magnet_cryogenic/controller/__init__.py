@@ -38,7 +38,7 @@ class Controller:
     TIMEOUT: int = 25000
     PROPER_RAMP_RATE: float = 0.390
     HEATER_WAIT: int = 30
-    RETRY_MAX: int = 3
+    RETRY_MAX: int = 5
     SLEEP: float = 0.1
 
     _retry_count: int = dataclasses.field(default="", init=False)
@@ -128,7 +128,7 @@ class Controller:
         while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('HEATER')
             res_array = self._response.split(' ')
-            if res_array[1] == 'HEATER':
+            if res_array[1] == 'HEATER' and res_array[2] == 'STATUS':
                 break
             self._retry_count += 1
             time.sleep(self.SLEEP)
