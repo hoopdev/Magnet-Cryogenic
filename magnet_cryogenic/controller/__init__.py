@@ -68,6 +68,7 @@ class Controller:
         self._retry_count = 0
         while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('GET OUTPUT')
+            self._log += self._response
             res_array = self._response.split(' ')
             if res_array[1] == 'OUTPUT:':
                 break
@@ -84,6 +85,7 @@ class Controller:
     def mid(self) -> float:
         time.sleep(self.SLEEP)
         self._response = self._inst.query('GET MID')
+        self._log += self._response
         res_array = self._response.split(' ')
         self._mid = MagnetValue(res_array[0], float(res_array[4]))
         return self._mid.value
@@ -98,6 +100,7 @@ class Controller:
             print('MID should be positive')
             return
         self._response = self._inst.query(f'SET MID {value}')
+        self._log += self._response
         print(self._response)
         return
 
@@ -105,6 +108,7 @@ class Controller:
     def ramp_rate(self) -> float:
         time.sleep(self.SLEEP)
         self._response = self._inst.query('GET RATE')
+        self._log += self._response
         res_array = self._response.split(' ')
         self._ramp_rate = MagnetValue(res_array[0], float(res_array[4]))
         if self._ramp_rate.value == self.PROPER_RAMP_RATE:
@@ -117,6 +121,7 @@ class Controller:
     def heater_voltage(self) -> float:
         time.sleep(self.SLEEP)
         self._response = self._inst.query('GET HV')
+        self._log += self._response
         res_array = self._response.split(' ')
         self._heater_voltage = MagnetValue(res_array[0], float(res_array[4]))
         return self._heater_voltage.value
@@ -127,6 +132,7 @@ class Controller:
         self._retry_count = 0
         while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('HEATER')
+            self._log += self._response
             res_array = self._response.split(' ')
             if res_array[1] == 'HEATER' and res_array[2] == 'STATUS':
                 break
@@ -151,9 +157,10 @@ class Controller:
     @heater.setter
     def heater(self, value: bool) -> None:
         def heater_on() -> None:
-            self._retry_count = 0
+            self._retry_count = 4
             while self._retry_count < self.RETRY_MAX:
                 self._response = self._inst.query('HEATER ON')
+                self._log += self._response
                 res_array = self._response.split(' ')
                 if res_array[1] == 'HEATER':
                     break
@@ -175,9 +182,10 @@ class Controller:
             return
 
         def heater_off() -> None:
-            self._retry_count = 0
+            self._retry_count = 4
             while self._retry_count < self.RETRY_MAX:
                 self._response = self._inst.query('HEATER OFF')
+                self._log += self._response
                 res_array = self._response.split(' ')
                 if res_array[1] == 'HEATER':
                     break
@@ -236,6 +244,7 @@ class Controller:
         self._retry_count = 0
         while self._retry_count < self.RETRY_MAX:
             self._response = self._inst.query('RAMP STATUS')
+            self._log += self._response
             res_array = self._response.split(' ')
             if res_array[1] == 'RAMP':
                 break
@@ -267,6 +276,7 @@ class Controller:
         time.sleep(self.SLEEP)
         if self.ramp_status.state == 'HOLDING':
             self._response = self._inst.write('RAMP ZERO')
+            self._log += self._response
         elif self.ramp_status.state == 'RAMPING':
             print("Already ramping")
         return
@@ -275,6 +285,7 @@ class Controller:
         time.sleep(self.SLEEP)
         if self.ramp_status.state == 'HOLDING':
             self._response = self._inst.write('RAMP MID')
+            self._log += self._response
         elif self.ramp_status.state == 'RAMPING':
             print("Already ramping")
         return
